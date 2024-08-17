@@ -1,6 +1,7 @@
 package com.example.Biblioteka.service;
 
 
+import com.example.Biblioteka.exception.AuthorNotFoundException;
 import com.example.Biblioteka.model.Author;
 import com.example.Biblioteka.dtos.AuthorDto;
 import com.example.Biblioteka.repository.AuthorRepository;
@@ -16,33 +17,25 @@ public class AuthorService {
 
     private final AuthorRepository authorRepository;
 
-    public AuthorDto addAuthor(AuthorDto authorDto)
-    {
+    public AuthorDto addAuthor(AuthorDto authorDto) {
         Author author = new Author();
         author.setName(authorDto.getName());
         Author savedAuthor = authorRepository.save(author);
-
         return toDto(savedAuthor);
     }
 
-    public AuthorDto getAuthorById(Long id)
-    {
+    public AuthorDto getAuthorById(Long id) {
         Author author = authorRepository.findById(id)
-                .orElseThrow();
-
+                .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + id));
         return toDto(author);
     }
 
-    public List<AuthorDto> getAllAuthors()
-    {
+    public List<AuthorDto> getAllAuthors() {
         List<Author> authors = authorRepository.findAll();
-        return authors.stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+        return authors.stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    public AuthorDto toDto(Author author)
-    {
+    private AuthorDto toDto(Author author) {
         AuthorDto authorDto = new AuthorDto();
         authorDto.setId(author.getId());
         authorDto.setName(author.getName());

@@ -1,5 +1,7 @@
 package com.example.Biblioteka.service;
 
+import com.example.Biblioteka.exception.AuthorNotFoundException;
+import com.example.Biblioteka.exception.BookNotFoundException;
 import com.example.Biblioteka.model.Author;
 import com.example.Biblioteka.model.Book;
 import com.example.Biblioteka.dtos.BookDto;
@@ -19,40 +21,36 @@ public class BookService {
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
 
-    public BookDto addBook(BookDto bookDto)
-    {
+    public BookDto addBook(BookDto bookDto) {
+        Author author = authorRepository.findById(bookDto.getAuthorId())
+                .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + bookDto.getAuthorId()));
+
         Book book = new Book();
         book.setTitle(bookDto.getTitle());
         book.setIsbn(bookDto.getIsbn());
         book.setPublicationYear(bookDto.getPublicationYear());
-
-        Author author = authorRepository.findById(bookDto.getAuthorId())
-                .orElseThrow();
         book.setAuthor(author);
 
         Book savedBook = bookRepository.save(book);
         return toDto(savedBook);
     }
 
-    public BookDto getBookById(Long id)
-    {
+    public BookDto getBookById(Long id) {
         Book book = bookRepository.findById(id)
-                .orElseThrow();
+                .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + id));
         return toDto(book);
     }
 
-    public List<BookDto> getAllBooks()
-    {
+    public List<BookDto> getAllBooks() {
         List<Book> books = bookRepository.findAll();
-
         return books.stream().map(this::toDto).collect(Collectors.toList());
     }
-    public BookDto toDto(Book book)
-    {
+
+    private BookDto toDto(Book book) {
         BookDto bookDto = new BookDto();
         bookDto.setId(book.getId());
-        bookDto.setIsbn(book.getIsbn());
         bookDto.setTitle(book.getTitle());
+        bookDto.setIsbn(book.getIsbn());
         bookDto.setPublicationYear(book.getPublicationYear());
         bookDto.setAuthorId(book.getAuthor().getId());
         return bookDto;

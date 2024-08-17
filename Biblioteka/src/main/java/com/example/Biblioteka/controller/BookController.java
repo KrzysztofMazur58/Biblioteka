@@ -1,8 +1,12 @@
 package com.example.Biblioteka.controller;
 
 import com.example.Biblioteka.dtos.BookDto;
+import com.example.Biblioteka.exception.AuthorNotFoundException;
+import com.example.Biblioteka.exception.BookNotFoundException;
 import com.example.Biblioteka.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,20 +24,29 @@ public class BookController {
     }
 
     @PostMapping
-    public BookDto addBook(@RequestBody BookDto bookDto)
-    {
-        return bookService.addBook(bookDto);
+    public ResponseEntity<BookDto> addBook(@RequestBody BookDto bookDto) {
+        try {
+            BookDto savedBook = bookService.addBook(bookDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedBook);
+        } catch (AuthorNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
     @GetMapping("/{id}")
-    public BookDto getBookIdById(@PathVariable Long id)
-    {
-        return bookService.getBookById(id);
+    public ResponseEntity<BookDto> getBookById(@PathVariable Long id) {
+        try {
+            BookDto book = bookService.getBookById(id);
+            return ResponseEntity.ok(book);
+        } catch (BookNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
     @GetMapping
-    public List<BookDto> getAllBooks()
-    {
-        return bookService.getAllBooks();
+    public ResponseEntity<List<BookDto>> getAllBooks() {
+        List<BookDto> books = bookService.getAllBooks();
+        return ResponseEntity.ok(books);
     }
+
 }
