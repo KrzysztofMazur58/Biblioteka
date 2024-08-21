@@ -49,4 +49,15 @@ public class BookController {
         return ResponseEntity.ok(books);
     }
 
+    @GetMapping("/fetch-and-save")
+    public String fetchAndSaveBooks(@RequestParam List<String> authorSlugs) {
+
+        if (authorSlugs.size() != 5) {
+            return "Zła liczba książek!";
+        }
+
+        bookService.fetchAndSaveBooks(authorSlugs);
+        return "Zapisano książki";
+    }
+
 }

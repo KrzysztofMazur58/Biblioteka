@@ -5,6 +5,7 @@ import com.example.Biblioteka.exception.BookNotFoundException;
 import com.example.Biblioteka.model.Author;
 import com.example.Biblioteka.model.Book;
 import com.example.Biblioteka.dtos.BookDto;
+import com.example.Biblioteka.model.BookFromApi;
 import com.example.Biblioteka.repository.AuthorRepository;
 import com.example.Biblioteka.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +55,31 @@ public class BookService {
         bookDto.setPublicationYear(book.getPublicationYear());
         bookDto.setAuthorId(book.getAuthor().getId());
         return bookDto;
+    }
+
+    private Book toEntity(BookFromApi bookFromApi)
+    {
+        Book book = new Book();
+        book.setTitle(bookFromApi.getTitle());
+        book.setIsbn("");
+        book.setPublicationYear(0);
+        return book;
+    }
+
+    public void saveBooks(List<BookFromApi> books) {
+        List<Book> bookEntities = books.stream()
+                .map(this::toEntity)
+                .collect(Collectors.toList());
+        bookRepository.saveAll(bookEntities);
+    }
+
+    public void fetchAndSaveBooks(List<String> authorSlugs)
+    {
+        for(String authorSlug : authorSlugs)
+        {
+            List<BookFromApi> books = new WolneLekturyClient().getBooksByAuthor(authorSlug);
+            saveBooks(books);
+        }
     }
 
 }
